@@ -1,33 +1,33 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { SUPPORTED_LANGUAGES, LanguageCode } from '@/lib/types';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { SUPPORTED_LANGUAGES, LanguageCode } from "@/lib/types";
 
 export default function Home() {
   const router = useRouter();
-  const [name, setName] = useState('');
-  const [language, setLanguage] = useState<LanguageCode>('en');
-  const [roomCode, setRoomCode] = useState('');
+  const [name, setName] = useState("");
+  const [language, setLanguage] = useState<LanguageCode>("en");
+  const [roomCode, setRoomCode] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const createRoom = async () => {
     if (!name.trim()) {
-      setError('Please enter your name');
+      setError("Please enter your name");
       return;
     }
 
     setIsCreating(true);
-    setError('');
+    setError("");
 
     try {
       // Create room
-      const createRes = await fetch('/api/rooms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'create' }),
+      const createRes = await fetch("/api/rooms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "create" }),
       });
 
       const createData = await createRes.json();
@@ -36,11 +36,11 @@ export default function Home() {
       }
 
       // Join the room
-      const joinRes = await fetch('/api/rooms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const joinRes = await fetch("/api/rooms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: 'join',
+          action: "join",
           roomCode: createData.roomCode,
           name: name.trim(),
           language,
@@ -54,7 +54,7 @@ export default function Home() {
 
       // Store user info in sessionStorage
       sessionStorage.setItem(
-        'townhall_user',
+        "townhall_user",
         JSON.stringify({
           id: joinData.userId,
           name: name.trim(),
@@ -65,7 +65,7 @@ export default function Home() {
 
       router.push(`/room/${createData.roomCode}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create room');
+      setError(err instanceof Error ? err.message : "Failed to create room");
     } finally {
       setIsCreating(false);
     }
@@ -73,23 +73,23 @@ export default function Home() {
 
   const joinRoom = async () => {
     if (!name.trim()) {
-      setError('Please enter your name');
+      setError("Please enter your name");
       return;
     }
     if (!roomCode.trim()) {
-      setError('Please enter a room code');
+      setError("Please enter a room code");
       return;
     }
 
     setIsJoining(true);
-    setError('');
+    setError("");
 
     try {
-      const res = await fetch('/api/rooms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/rooms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: 'join',
+          action: "join",
           roomCode: roomCode.trim().toUpperCase(),
           name: name.trim(),
           language,
@@ -102,7 +102,7 @@ export default function Home() {
       }
 
       sessionStorage.setItem(
-        'townhall_user',
+        "townhall_user",
         JSON.stringify({
           id: data.userId,
           name: name.trim(),
@@ -113,7 +113,7 @@ export default function Home() {
 
       router.push(`/room/${data.roomCode}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to join room');
+      setError(err instanceof Error ? err.message : "Failed to join room");
     } finally {
       setIsJoining(false);
     }
@@ -122,6 +122,28 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+        {/* Demo Video Button */}
+        <div className="text-center mb-6">
+          <a
+            href="https://loom.com/share/9719e198cb654d5fa810307ae3c00f33"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-pink-500 via-red-500 to-orange-500 hover:from-pink-400 hover:via-red-400 hover:to-orange-400 text-white font-bold rounded-full shadow-lg shadow-pink-500/30 hover:shadow-pink-500/50 transition-all duration-300 hover:scale-105 animate-pulse hover:animate-none"
+          >
+            <svg
+              className="w-6 h-6 group-hover:scale-110 transition-transform"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M8 5v14l11-7z" />
+            </svg>
+            <span className="text-lg">Watch Demo Video</span>
+            <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs font-medium">
+              2 min
+            </span>
+          </a>
+        </div>
+
         {/* Logo/Title */}
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold text-white mb-2">VoiceLink</h1>
@@ -177,7 +199,7 @@ export default function Home() {
             disabled={isCreating || isJoining}
             className="w-full py-3 bg-purple-600 hover:bg-purple-500 disabled:bg-purple-600/50 text-white font-semibold rounded-lg transition-colors mb-4"
           >
-            {isCreating ? 'Creating...' : 'Create New Room'}
+            {isCreating ? "Creating..." : "Create New Room"}
           </button>
 
           {/* Divider */}
@@ -205,7 +227,7 @@ export default function Home() {
             disabled={isCreating || isJoining}
             className="w-full py-3 bg-white/10 hover:bg-white/20 disabled:bg-white/5 text-white font-semibold rounded-lg border border-white/20 transition-colors"
           >
-            {isJoining ? 'Joining...' : 'Join Room'}
+            {isJoining ? "Joining..." : "Join Room"}
           </button>
         </div>
 
