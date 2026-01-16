@@ -2,10 +2,19 @@
 
 import { LanguageCode, SUPPORTED_LANGUAGES } from './types';
 
-const STT_URL = process.env.HATHORA_STT_URL!;
-const LLM_URL = process.env.HATHORA_LLM_URL!;
-const TTS_URL = process.env.HATHORA_TTS_URL!;
-const API_KEY = process.env.HATHORA_API_KEY!;
+// Validate environment variables
+function getEnvVar(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return value;
+}
+
+const STT_URL = () => getEnvVar('HATHORA_STT_URL');
+const LLM_URL = () => getEnvVar('HATHORA_LLM_URL');
+const TTS_URL = () => getEnvVar('HATHORA_TTS_URL');
+const API_KEY = () => getEnvVar('HATHORA_API_KEY');
 
 // Language names for the LLM translation prompt
 const LANGUAGE_NAMES: Record<LanguageCode, string> = {
@@ -36,23 +45,38 @@ export async function transcribeAudio(audioBlob: Blob): Promise<string> {
   const mimeToExt: Record<string, string> = {
     'audio/webm': 'webm',
     'audio/webm;codecs=opus': 'webm',
+    'audio/ogg': 'ogg',
+    'audio/ogg;codecs=opus': 'ogg',
     'audio/mp4': 'm4a',
     'audio/mpeg': 'mp3',
     'audio/wav': 'wav',
+    'audio/x-wav': 'wav',
   };
-  const ext = mimeToExt[audioBlob.type] || 'webm';
+  
+  // Handle empty or unknown MIME types - default to webm as that's most common from browsers
+  const blobType = audioBlob.type || 'audio/webm';
+  const ext = mimeToExt[blobType] || mimeToExt[blobType.split(';')[0]] || 'webm';
   const filename = `audio.${ext}`;
+  
+  // If MIME type is empty, log a warning
+  if (!audioBlob.type) {
+    console.warn('[STT] Warning: Audio blob has no MIME type, defaulting to audio/webm');
+  }
 
   const formData = new FormData();
   formData.append('file', audioBlob, filename);
 
-  console.log('[STT] Sending to:', STT_URL);
+  const sttUrl = STT_URL();
+  const apiKey = API_KEY();
+  
+  console.log('[STT] Sending to:', sttUrl);
   console.log('[STT] Filename:', filename);
+  console.log('[STT] API key present:', !!apiKey && apiKey.length > 0);
 
-  const response = await fetch(STT_URL, {
+  const response = await fetch(sttUrl, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${API_KEY}`,
+      Authorization: `Bearer ${apiKey}`,
       Accept: 'application/json',
     },
     body: formData,
@@ -60,10 +84,15 @@ export async function transcribeAudio(audioBlob: Blob): Promise<string> {
 
   const responseText = await response.text();
   console.log('[STT] Response status:', response.status);
-  console.log('[STT] Response body:', responseText);
+  console.log('[STT] Response headers:', Object.fromEntries(response.headers.entries()));
+  console.log('[STT] Response body:', responseText.substring(0, 500));
 
   if (!response.ok) {
-    throw new Error(`STT failed: ${response.status} - ${responseText}`);
+    // Include more context in the error for debugging
+    throw new Error(
+      `STT failed: ${response.status} - ${responseText.substring(0, 200)}. ` +
+      `Audio: ${audioBlob.size} bytes, type: ${audioBlob.type}, filename: ${filename}`
+    );
   }
 
   let data;
@@ -95,10 +124,10 @@ export async function translateText(
 
   const systemPrompt = `You are a translator. Translate the following text from ${LANGUAGE_NAMES[sourceLanguage]} into ${LANGUAGE_NAMES[targetLanguage]}. Output ONLY the translation, no preamble, no explanation, no quotes.`;
 
-  const response = await fetch(LLM_URL, {
+  const response = await fetch(LLM_URL(), {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${API_KEY}`,
+      Authorization: `Bearer ${API_KEY()}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -160,10 +189,10 @@ export async function synthesizeSpeech(
 ): Promise<string> {
   console.log('[TTS] Synthesizing:', text.substring(0, 50), '... in', language);
 
-  const response = await fetch(TTS_URL, {
+  const response = await fetch(TTS_URL(), {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${API_KEY}`,
+      Authorization: `Bearer ${API_KEY()}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({

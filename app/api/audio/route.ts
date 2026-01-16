@@ -17,9 +17,26 @@ export async function POST(request: NextRequest) {
     const userId = formData.get('userId') as string;
     const userLanguage = formData.get('language') as LanguageCode;
 
+    // Log audio file details for debugging
+    console.log('[Audio] Received audio file:', {
+      hasFile: !!audioFile,
+      size: audioFile?.size,
+      type: audioFile?.type,
+      isFile: audioFile instanceof File,
+      name: audioFile instanceof File ? audioFile.name : 'N/A',
+    });
+
     if (!audioFile || !roomCode || !userId || !userLanguage) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Validate audio file has content
+    if (audioFile.size === 0) {
+      return NextResponse.json(
+        { success: false, error: 'Audio file is empty' },
         { status: 400 }
       );
     }
