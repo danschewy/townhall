@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TownHall - Real-time Multilingual Voice Chat",
+  title: "VoiceLink - Real-time Multilingual Voice Chat",
   description: "Speak your language, hear theirs. Real-time voice chat with automatic translation.",
 };
 

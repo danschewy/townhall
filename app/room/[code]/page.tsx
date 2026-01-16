@@ -240,7 +240,7 @@ export default function RoomPage() {
       <header className="bg-black/20 backdrop-blur-sm border-b border-white/10 p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-white">TownHall</h1>
+            <h1 className="text-xl font-bold text-white">VoiceLink</h1>
             <p className="text-white/60 text-sm">
               Room: <span className="font-mono">{roomCode}</span>
             </p>

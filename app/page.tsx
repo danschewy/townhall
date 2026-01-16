@@ -124,7 +124,7 @@ export default function Home() {
       <div className="w-full max-w-md">
         {/* Logo/Title */}
         <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-white mb-2">TownHall</h1>
+          <h1 className="text-5xl font-bold text-white mb-2">VoiceLink</h1>
           <p className="text-purple-300 text-lg">
             Real-time voice chat in any language
           </p>
